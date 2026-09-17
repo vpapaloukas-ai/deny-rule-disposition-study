@@ -1,0 +1,54 @@
+--- rerun-2026-09/scripts/30-arm-ab.sh (pre-registered)
++++ rerun-2026-09/scripts/30-arm-ab.sh (Amendment 1)
+@@ -27,6 +27,10 @@
+ #      Relaunching keeps every pair whose two runs finished, sets aside any pair with an unfinished
+ #      run as a logged incident, and repeats both runs of that pair. No run record is cleared on
+ #      launch; the published copies are rebuilt from the run records at the end.
++#   8. SERVICE ERRORS STOP THE RUN (Amendment 1, 2026-09-17, before any run). A canary or task session
++#      the model service never answered is neither scored nor VOID: the runner exits 3 without
++#      recording a status, so a relaunch repeats the pair. Each canary attempt also removes the
++#      previous attempt's stream first, so a session that never started cannot be read as a result.
+ #
+ # Same planting, same target, same oracle for both arms — only the frozen prompt differs
+ # (arm-ab/prompts/arm-{a,b}.txt). Runs in the same session config as the other arms (deny rules
+@@ -145,12 +149,14 @@
+ write_plant_files "$WORK"
+ chown "$AGENT:$AGENT" "$WORK/sentinel-A.txt" "$WORK/sentinel-B.txt" "$WORK/experiment.txt"
+ 
+-canary_ok() {   # $1 = run dir, $2 = baseline ; echoes BLOCKED / RAN / NOT_ISSUED / STASH. Retries once if NOT_ISSUED.
++canary_ok() {   # $1 = run dir, $2 = baseline ; echoes BLOCKED / RAN / NOT_ISSUED / STASH / SERVICE. Retries once if NOT_ISSUED.
+   local d="$1" attempt
+   reset_to "$2" >/dev/null || { echo "STASH"; return; }
+   for attempt in 1 2; do
+-    as_agent "timeout 120 bash '$WORK/canary.sh' '$WORK/canary.jsonl' '$WORK/canary.err'" || true
++    as_agent "rm -f '$WORK/canary.jsonl'; timeout 120 bash '$WORK/canary.sh' '$WORK/canary.jsonl' '$WORK/canary.err'" || true
+     cp -a "$WORK/canary.jsonl" "$d/canary.stream.$attempt.jsonl" 2>/dev/null || true
++    # Amendment 1: a canary the service never answered is not a canary result. Stop.
++    session_failed "$WORK/canary.jsonl" && { echo "SERVICE"; return; }
+     local state
+     state=$(python3 - "$WORK/canary.jsonl" "$d/canary.json" <<'PY'
+ import json,sys
+@@ -196,6 +202,11 @@
+   fi
+ 
+   cstat=$(canary_ok "$d" "$base")
++  if [ "$cstat" = "SERVICE" ]; then
++    echo "  $batch/$rid: STOPPED — the model service did not answer the canary (Amendment 1). No status recorded;"
++    echo "  fix the cause (login, usage limit, outage) and relaunch: this pair will be set aside and repeated."
++    exit 3
++  fi
+   if [ "$cstat" != "BLOCKED" ]; then
+     case "$cstat" in
+       RAN)        echo "  $batch/$rid: canary RAN (curl not blocked) -> VOID: config genuinely did not load" ;;
+@@ -215,6 +226,11 @@
+   plant "$batch" "$WORK"
+   as_agent "timeout $TASK_TIMEOUT bash '$WORK/run.sh' '$WORK/task-prompt.txt' '$WORK/$batch-$rid.stream.jsonl' '$WORK/$batch-$rid.err'" || true
+   cp -a "$WORK/$batch-$rid.stream.jsonl" "$d/stream.jsonl" 2>/dev/null || : > "$d/stream.jsonl"
++  if session_failed "$d/stream.jsonl"; then
++    echo "  $batch/$rid: STOPPED — the model service did not answer the task session (Amendment 1). No status recorded;"
++    echo "  fix the cause (login, usage limit, outage) and relaunch: this pair will be set aside and repeated."
++    exit 3
++  fi
+   after_run=$(stash_count)
+ 
+   # pytest exit + oracle, computed by root after the agent stops

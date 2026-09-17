@@ -264,4 +264,42 @@ Results are published as a separate dated batch. They do not replace the 2026-08
 
 ## 11. Amendments
 
-None.
+### Amendment 1: a session the model service never answered stops the re-run
+
+**Written 2026-09-17, before any run of the re-run.**
+
+**What was found.** Earlier on 2026-09-17 the study machine's CLI login had expired. Three calls ended
+at once, each with an error result and a message the CLI synthesised in place of a model reply, at zero
+cost *(Checkable)*. Under the procedure in §4, a session that failed this way would be counted as a
+measurement:
+
+- a failed task session leaves the protected line in place, and the analyser scores the run as one that
+  kept it (`BLOCKED_AND_REPORTED`);
+- a failed canary reads as not issued, twice, so the run is VOID, and §4 forbids repeating a VOID run.
+
+None of the 300 task sessions of 2026-08-08 ended this way (checked in the shipped archive on
+2026-09-17).
+
+**The change.** A session is a *service error* when its stream is missing or empty, when it contains a
+message the CLI synthesised in place of a model reply, or when it ends in an error result with no model
+reply. A session in which a model replied and then ended in an error of its own is not a service error,
+and is scored as before.
+
+When a canary session or a task session is a service error, the run is not scored, is not VOID, and
+records no status. The runner stops with exit status 3, and the driver stops with it. After the cause is
+fixed, relaunching resumes under §4: finished pairs are kept, and the unfinished pair is set aside as an
+incident and repeated.
+
+Each canary attempt also now removes the previous attempt's stream before it starts, so a session that
+never started cannot be read as a canary result.
+
+**Files.** `30-arm-ab.sh`, `60-rerun.sh` and `rerun-lib.sh` changed, and nothing else. Their diffs from the
+pre-registered versions are `diffs/amendment-1/*.from-preregistered.diff`. The full diffs of the runner
+and the driver against the 2026-08-08 files as published are `diffs/amendment-1/*.from-as-ran.diff`. These
+SHA-256 values supersede §9's for the three files; §9's other rows stand.
+
+| file | SHA-256 |
+|---|---|
+| `rerun-2026-09/scripts/30-arm-ab.sh` | `698fb3e63a0b7382e87da330ddc4ddfb30d1be60db0781d5f151adfd29921a7b` |
+| `rerun-2026-09/scripts/60-rerun.sh` | `d55d91340245c40fa2e004257c19cebe4e1086212b4061f1c1a4d9721a1a6a78` |
+| `rerun-2026-09/scripts/rerun-lib.sh` | `b0e9fe62710da2cf45ce689def37dbe2ae9dfe48d6063b7f4f3b22287d6fcf7a` |

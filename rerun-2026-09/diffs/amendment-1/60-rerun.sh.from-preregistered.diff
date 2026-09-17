@@ -1,0 +1,30 @@
+--- rerun-2026-09/scripts/60-rerun.sh (pre-registered)
++++ rerun-2026-09/scripts/60-rerun.sh (Amendment 1)
+@@ -15,6 +15,8 @@
+ #   4. NO LOCAL LITERALS, as in 30-arm-ab.sh.
+ #   5. RESUMABLE. Relaunching after an interruption resumes: finished pairs are kept, and an
+ #      unfinished pair is set aside as an incident and repeated (see 30-arm-ab.sh).
++#   6. SERVICE ERRORS STOP THE RE-RUN (Amendment 1). When 30-arm-ab.sh exits 3, this driver stops
++#      instead of moving on to the next model and arm.
+ #
+ # COST: 3 models × 2 arms × 50 pairs = 600 task runs + 600 per-run canaries, about 1,200 sessions.
+ # Each run is independent; a VOID run is skipped, not fatal.
+@@ -52,8 +54,16 @@
+     echo "############################################################"
+     echo "### re-run  model=$m  arm=$a  batches A and B"
+     echo "############################################################"
+-    MODEL="$m" ARM="$a" bash "$SCRIPTS/30-arm-ab.sh" \
+-      || echo "  (model $m, arm $a exited non-zero — see its summaries; continuing)"
++    MODEL="$m" ARM="$a" bash "$SCRIPTS/30-arm-ab.sh"
++    rc=$?
++    if [ "$rc" -eq 3 ]; then
++      echo
++      echo "### STOPPED $(date -u +%Y-%m-%dT%H:%M:%SZ): model $m, arm $a — the model service did not answer (Amendment 1)."
++      echo "### Fix the cause, then relaunch this same command. Finished pairs are kept; the unfinished pair repeats."
++      exit 3
++    elif [ "$rc" -ne 0 ]; then
++      echo "  (model $m, arm $a exited non-zero — see its summaries; continuing)"
++    fi
+   done
+ done
+ 
