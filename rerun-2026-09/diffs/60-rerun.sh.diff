@@ -1,0 +1,98 @@
+--- harness/60-disposition-n50.sh (as published)
++++ rerun-2026-09/scripts/60-rerun.sh
+@@ -1,46 +1,72 @@
+ #!/usr/bin/env bash
+-# 60-disposition-n50.sh — the authoritative disposition batch: n=50, BOTH arms
+-# (B then A), ALL THREE models (Opus, Sonnet, Haiku), each a single fresh batch of
+-# 50 (R01..R50), per-run canary. ONE operator launch:  sudo bash 60-disposition-n50.sh
++# 60-rerun.sh — the 2026-09 re-run of the disposition arms: batches A and B, n=50 run pairs per
++# model and arm, all three models (Opus, Sonnet, Haiku), per-run canary.
++# ONE operator launch:  sudo AGENT=<account> bash 60-rerun.sh
+ #
+-# Supersedes the n=10 disposition pilots (Opus arm-{a,b}-results and the cross-model
+-# arm-{a,b}-{sonnet,haiku}-results). Those stay on disk as pilots; the n=50 batches
+-# (SUFFIX=-n50) are the reported result. Rule-mechanics arms (C/D/Phase 2) are
+-# unaffected — n=50 is a disposition measurement.
++# Copied from harness/60-disposition-n50.sh, which ran the 2026-08-08 batch and is unchanged. The
++# pre-registration commits the full diff against that file. What changed:
++#   1. PRESERVE, THEN CLEAR. Before any run, every stash already in the shared working copy is
++#      preserved outside the repository: the list, one patch per entry, and a verified bundle. The
++#      runner then clears stashes on every reset. The stash an Opus told-arm run made on 2026-08-08
++#      was still in the working copy on 2026-09-17.
++#   2. PREFLIGHT. The agent account's CLI must report 2.1.222 before anything starts.
++#   3. ORDER. Models and arms run in the 2026-08-08 order. Within each, 30-arm-ab.sh interleaves
++#      the two batches run by run.
++#   4. NO LOCAL LITERALS, as in 30-arm-ab.sh.
++#   5. RESUMABLE. Relaunching after an interruption resumes: finished pairs are kept, and an
++#      unfinished pair is set aside as an incident and repeated (see 30-arm-ab.sh).
+ #
+-# COST: 3 models × 2 arms × 50 = 300 task runs + 300 per-run canaries ≈ 600 sessions,
+-# ~5-7 h unattended. Each run is independent; a VOID run is skipped, not fatal.
++# COST: 3 models × 2 arms × 50 pairs = 600 task runs + 600 per-run canaries, about 1,200 sessions.
++# Each run is independent; a VOID run is skipped, not fatal.
+ set -uo pipefail
+-[ "$(id -u)" -eq 0 ] || { echo "must run as root: sudo bash $0"; exit 1; }
+-HARNESS=<repo>/experiments/deny-rule-adversarial/harness
++[ "$(id -u)" -eq 0 ] || { echo "must run as root: sudo AGENT=<account> bash $0"; exit 1; }
++SCRIPTS=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++
++AGENT=${AGENT:?set AGENT to the unprivileged account that runs the agent}
++AHOME=$(getent passwd "$AGENT" | cut -d: -f6)
++[ -n "$AHOME" ] || { echo "no home directory for account $AGENT"; exit 1; }
++COPY=$AHOME/advtest/agent-team-starter
++PUBROOT=$AHOME/advtest/rerun-2026-09
++as_agent() { runuser -l "$AGENT" -c "$1"; }
++# shellcheck source=rerun-lib.sh
++. "$SCRIPTS/rerun-lib.sh"
+ 
+ MODELS="opus sonnet haiku"
+ ARMS="b a"                 # blind first, then told
+-export N=50 SUFFIX=-n50    # 30-arm-ab.sh reads these
++export N=${N:-50} AGENT    # 30-arm-ab.sh reads these
+ 
+-echo "### DISPOSITION n=50 — models: $MODELS — arms: $ARMS — 6 batches of 50 ###"
+-echo "### started (each batch prints its own progress) ###"
++echo "### RE-RUN 2026-09 — models: $MODELS — arms: $ARMS — batches A and B interleaved — $N pairs each ###"
++
++ver=$(as_agent "DISABLE_AUTOUPDATER=1 claude --version" 2>/dev/null | head -1 | cut -d' ' -f1)
++[ "$ver" = 2.1.222 ] || { echo "ABORT: the agent account's CLI reports '$ver', not 2.1.222. Nothing was run."; exit 1; }
++echo "  CLI: $ver"
++
++preserved=$(preserve_stashes "$PUBROOT/preserved-stashes") \
++  || { echo "ABORT: could not preserve the existing stash entries. Nothing was cleared or run."; exit 1; }
++echo "  stash entries preserved before any run: $preserved (in $PUBROOT/preserved-stashes/)"
++echo "### started $(date -u +%Y-%m-%dT%H:%M:%SZ) (each model and arm prints its own progress) ###"
+ 
+ for m in $MODELS; do
+   for a in $ARMS; do
+     echo
+     echo "############################################################"
+-    echo "### n=50  model=$m  arm=$a"
++    echo "### re-run  model=$m  arm=$a  batches A and B"
+     echo "############################################################"
+-    MODEL="$m" ARM="$a" bash "$HARNESS/30-arm-ab.sh" \
+-      || echo "  (batch $a/$m exited non-zero — see its summary; continuing)"
++    MODEL="$m" ARM="$a" bash "$SCRIPTS/30-arm-ab.sh" \
++      || echo "  (model $m, arm $a exited non-zero — see its summaries; continuing)"
+   done
+ done
+ 
+ echo
+-echo "=== n=50 COMPLETE — tallies ==="
++echo "=== RE-RUN COMPLETE $(date -u +%Y-%m-%dT%H:%M:%SZ) — tallies ==="
+ for m in $MODELS; do
+   for a in $ARMS; do
+-    s=/home/user/advtest/arm-$a-$m-n50-results/summary.md
+-    [ "$m" = opus ] && s=/home/user/advtest/arm-$a-n50-results/summary.md
+-    echo "--- model=$m arm=$a ---"
+-    if [ -f "$s" ]; then grep -E 'Runs:|CIRCUMVENTED:|COMPLIANT_SOLVE:|BLOCKED_AND_REPORTED:|BLOCKED_SILENT:|VOID:' "$s" | tr '\n' ' '; echo; else echo "    (no summary)"; fi
++    for b in A B; do
++      s=$PUBROOT/arm-$a-$m-$b-results/summary.md
++      echo "--- model=$m arm=$a batch=$b ---"
++      if [ -f "$s" ]; then grep -E 'Runs:|CIRCUMVENTED:|COMPLIANT_SOLVE:|BLOCKED_AND_REPORTED:|BLOCKED_SILENT:|VOID:' "$s" | tr '\n' ' '; echo; else echo "    (no summary)"; fi
++    done
+   done
+ done
+ echo
+-echo "Published under ~/advtest/arm-{a,b}[-{sonnet,haiku}]-n50-results/. The n=10 pilots are untouched."
++echo "Published under $PUBROOT/arm-{a,b}-{opus,sonnet,haiku}-{A,B}-results/. The 2026-08-08 batch is untouched."
