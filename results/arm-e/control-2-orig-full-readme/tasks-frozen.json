@@ -1,0 +1,52 @@
+[
+  {
+    "role": "researcher",
+    "task": "Investigate a support report that an annual subscription anchored on Feb 29 and changed on Feb 28 of a common year produces a credit whose window disagrees with `charged_from`. Trace the anchor/clamping math in `periods.py` and the credit ratio in `engine.py`, and report the exact inputs that reproduce it, the file:line path the value takes, and which existing tests in `test_periods.py`/`test_engine.py` cover or miss it. Change nothing.",
+    "done_when": "A written report names a concrete reproducing (anchor, change instant, plan) triple plus the file:line chain from anchor computation to credit, and states whether existing tests cover that path."
+  },
+  {
+    "role": "researcher",
+    "task": "Map the library's refusal surface: every raise site for `StaleSubscriptionError`, backdated-change, currency-mismatch and `CadenceChangeError` across `engine.py`, `plans.py` and `errors.py`. For each, record the precondition that triggers it, which of `change`/`renew` can reach it, and the test that pins it, flagging any raise with no test.",
+    "done_when": "A table of error \u2192 precondition \u2192 reachable entry point \u2192 covering test exists, with untested raise sites explicitly listed."
+  },
+  {
+    "role": "architect",
+    "task": "Write an ADR and slice plan for adding `Interval.WEEK` to `Cadence`. Decide and record how weekly anchors behave (no day-of-month clamping, pure 7-day offsets from the original anchor), how it interacts with the existing `CadenceChangeError` rule, and break the work into the smallest test-backed slices (period arithmetic \u2192 engine proration \u2192 public export).",
+    "done_when": "An ADR file records the anchor decision and its rejected alternative, and lists 3 or fewer slices, each with the failing test that opens it."
+  },
+  {
+    "role": "architect",
+    "task": "Define the contract for a non-mutating `preview(sub, at, *, plan=None, quantity=None)` that returns the same `InvoiceDraft` shape as `change` without advancing the subscription, including which errors it must raise identically and what `draft.subscription` means for a preview. Produce the signature, the invariants, and the slice sequence.",
+    "done_when": "A plan document states the exact signature, the error-parity invariant against `change`, and an ordered list of test-backed slices."
+  },
+  {
+    "role": "implementer",
+    "task": "Fix the `ProrationPolicy.DAY` off-by-one where a change landing exactly on a UTC midnight boundary is counted as a partial day and rounded up to an extra whole day. Work TDD: red test at the exact boundary instant, minimal fix in the day-remainder calculation, then refactor.",
+    "done_when": "A new boundary test in `test_engine.py` fails before the change and passes after, with the full suite green."
+  },
+  {
+    "role": "implementer",
+    "task": "Harden `Money.allocate`: raise a clear error on an empty weight list and on weights that sum to zero, and add tests proving the largest-remainder split still sums exactly back to the whole for negative totals and for a zero-exponent currency (JPY).",
+    "done_when": "`test_money.py` covers empty weights, all-zero weights, negative totals and JPY, and every allocation test asserts the parts sum to the input total."
+  },
+  {
+    "role": "implementer",
+    "task": "Turn the README Usage block and the proration-policy table into executable documentation: make the printed values in the usage example real doctest output, add a short doctest showing a `DAY`-policy change and a `NONE`-policy no-op, and wire `--doctest-glob=README.md` into the pytest config in `pyproject.toml`.",
+    "done_when": "`pytest` alone runs the README doctests and they pass without editing any expected output by hand."
+  },
+  {
+    "role": "reviewer",
+    "task": "Review the `ProrationPolicy.DAY` boundary fix against its acceptance criteria. Check the half-open `[start, end)` convention is respected at both ends, that credit and charge still round symmetrically so they cannot drift by a minor unit, and that no `SECOND`-policy behaviour changed. Report findings; do not fix them.",
+    "done_when": "A findings list is filed with a pass/fail call on each acceptance criterion, and any correctness or rounding concern cites file:line."
+  },
+  {
+    "role": "reviewer",
+    "task": "Adversarially review the public API surface: what `src/proration/__init__.py` re-exports versus what the README documents, whether `__all__` accidentally exposes internals, and whether the `py.typed` package actually type-checks clean for a consumer (run mypy/pyright in strict mode against a small consumer snippet).",
+    "done_when": "A report lists every symbol that is exported-but-undocumented or documented-but-unexported, plus the type-checker output for the consumer snippet."
+  },
+  {
+    "role": "orchestrator",
+    "task": "Run the `Interval.WEEK` feature from request to done for this week: take the research map, gate the ADR before any code, delegate the slices one at a time, send each to review, and decide at the end of the week whether it ships or holds. Thread the Feb-29 investigation's outcome in as either a separate fix or a documented known issue.",
+    "done_when": "Each slice has a recorded gate decision, review findings are either resolved or explicitly deferred with a reason, and a one-paragraph ship/hold call is written up."
+  }
+]

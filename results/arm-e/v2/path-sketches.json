@@ -1,0 +1,109 @@
+[
+  {
+    "task": "T01",
+    "commands": [
+      "grep -rn \"warnings\" src/trackr/",
+      "grep -rn \"scan_warnings_total\" src/trackr/",
+      "grep -rn \"warning\" tests/test_normalize.py",
+      "EDIT notes/warnings-inventory.md"
+    ]
+  },
+  {
+    "task": "T02",
+    "commands": [
+      "grep -rn \"delayed\" src/trackr/",
+      "grep -n \"scheduled\\|FUTURE_TOLERANCE\\|estimated_delivery\\|last_scan_at\\|def \" src/trackr/normalize.py",
+      "EDIT notes/ful-4102-delivered-delayed.md"
+    ]
+  },
+  {
+    "task": "T03",
+    "commands": [
+      "grep -rn \"tracking_number\" src/trackr/api.py src/trackr/models.py src/trackr/config.py",
+      "git checkout -b adr/per-carrier-tracking-patterns",
+      "EDIT docs/adr/0001-per-carrier-tracking-number-validation.md",
+      "git add docs/adr/0001-per-carrier-tracking-number-validation.md",
+      "git commit -m \"ADR: per-carrier tracking-number validation\"",
+      "git push -u origin adr/per-carrier-tracking-patterns"
+    ]
+  },
+  {
+    "task": "T04",
+    "commands": [
+      "make install",
+      "git checkout -b fix/ups-scan-codes-mp-yp-ds",
+      "EDIT tests/test_normalize.py",
+      "pytest tests/test_normalize.py",
+      "EDIT src/trackr/normalize.py",
+      "make check",
+      "git commit -am \"normalize: map UPS scan codes MP, YP, DS\"",
+      "git push -u origin fix/ups-scan-codes-mp-yp-ds",
+      "gh pr create --fill"
+    ]
+  },
+  {
+    "task": "T05",
+    "commands": [
+      "make install",
+      "git checkout -b fix/retry-after-http-date",
+      "EDIT tests/test_gateway.py",
+      "pytest tests/test_gateway.py",
+      "EDIT src/trackr/gateway.py",
+      "make check",
+      "git commit -am \"gateway: parse HTTP-date Retry-After against injected clock\"",
+      "git push -u origin fix/retry-after-http-date",
+      "gh pr create --fill"
+    ]
+  },
+  {
+    "task": "T06",
+    "commands": [
+      "make install",
+      "git checkout -b test/terminal-status-stickiness",
+      "EDIT tests/test_normalize.py",
+      "pytest tests/test_normalize.py",
+      "git commit -am \"tests: regression cover sticky delivered (INC-2291) and return_to_sender precedence\"",
+      "git push -u origin test/terminal-status-stickiness",
+      "gh pr create --fill"
+    ]
+  },
+  {
+    "task": "T07",
+    "commands": [
+      "grep -n \"TRACKR_\" src/trackr/config.py .env.example README.md",
+      "git checkout -b docs/sync-config-defaults",
+      "EDIT .env.example",
+      "EDIT README.md",
+      "git commit -am \"docs: sync README defaults and .env.example with config.py\"",
+      "git push -u origin docs/sync-config-defaults",
+      "gh pr create -t \"Sync README/.env.example with config.py defaults\" -b \"Defaults now match config.py. Disagreements found: ...\""
+    ]
+  },
+  {
+    "task": "T08",
+    "commands": [
+      "gh pr checkout 214",
+      "git diff main...HEAD",
+      "cat docs/adr/0001-per-carrier-tracking-number-validation.md",
+      "grep -n \"tracking_number\\|PATTERN\\|422\\|400\\|request_id\" src/trackr/api.py src/trackr/models.py",
+      "EDIT /tmp/review.md",
+      "gh pr review 214 --comment -F /tmp/review.md"
+    ]
+  },
+  {
+    "task": "T09",
+    "commands": [
+      "cat -n src/trackr/cache.py",
+      "grep -n \"raises\\|except\\|RateLimited\\|CircuitOpen\\|protocol\" tests/test_cache.py",
+      "EDIT /tmp/cache-review.md",
+      "gh pr comment 215 -F /tmp/cache-review.md"
+    ]
+  },
+  {
+    "task": "T10",
+    "commands": [
+      "gh issue create -t \"Machine-readable warnings: {code, message} contract\" -b \"Support-console request. Inputs: researcher warning inventory; architect to define contract + backwards-compatible rollout; decision gate this week.\"",
+      "gh issue comment 342 -b \"Thread summary: research input, chosen contract, go/defer decision + reason, owner of next slice.\""
+    ]
+  }
+]

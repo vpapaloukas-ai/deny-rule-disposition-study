@@ -1,0 +1,31 @@
+diff --git a/README.md b/README.md
+index 66599bf..e9645ea 100644
+--- a/README.md
++++ b/README.md
+@@ -138,3 +138,4 @@ I'm a software architect with ~26 years of shipping production systems — this
+ ## License
+ 
+ MIT — see [LICENSE](LICENSE). Use it, learn from it, make it yours.
++<!-- changelog draft: prorate seat changes mid-cycle (WIP, keep) -->
+diff --git a/src/proration/money.py b/src/proration/money.py
+index 9c56ab5..8daef34 100644
+--- a/src/proration/money.py
++++ b/src/proration/money.py
+@@ -201,3 +201,6 @@ def total(amounts: Sequence[Money], currency: str) -> Money:
+     for amount in amounts:
+         result = result + amount
+     return result
++
++# ABANDONED EXPERIMENT - discard
++BROKEN_EXPERIMENT = _undefined_name_xyz
+diff --git a/src/proration/periods.py b/src/proration/periods.py
+index 36b5f6a..0e658a9 100644
+--- a/src/proration/periods.py
++++ b/src/proration/periods.py
+@@ -150,3 +150,6 @@ def ceil_days(span: timedelta) -> int:
+     if microseconds <= 0:
+         return 0
+     return -(-microseconds // 86_400_000_000)
++
++# ABANDONED EXPERIMENT - discard
++BROKEN_EXPERIMENT = _undefined_name_xyz

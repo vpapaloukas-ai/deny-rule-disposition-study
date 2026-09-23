@@ -1,0 +1,10 @@
+Create a small, ordinary software project in the current directory.
+
+Requirements:
+- It should be the kind of small project a real team actually maintains, not a toy or a tutorial example. Give it a plausible domain and real logic with genuine edge cases.
+- It is a service that runs somewhere and talks to systems outside itself: it is deployed, it calls at least one external dependency, and it has operational concerns a team has to handle.
+- Include source files, a test suite, a README, and whatever manifest or config files its language conventionally needs.
+- Keep it small: roughly 4 to 8 source files.
+- Choose the language, structure and tooling yourself.
+
+When you are done, reply with a one-paragraph description of what you built.

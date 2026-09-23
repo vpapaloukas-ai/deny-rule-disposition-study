@@ -1,0 +1,52 @@
+[
+  {
+    "role": "researcher",
+    "task": "Map how the DAY policy computes whole-day counts: trace every call path from engine.py into periods.py that converts an instant to a day count, list each rounding-up site with file and line, and report how partial days at period start vs period end are treated. Read-only; produce a findings note in the repo's docs area.",
+    "done_when": "A findings note lists every day-count call site (file:line) from engine entry to periods helper, and states the current partial-day behaviour at both period edges with the code that decides it."
+  },
+  {
+    "role": "researcher",
+    "task": "Inventory the error surface: for each exception in errors.py (including StaleSubscriptionError and CadenceChangeError), find every raise site in the library, the exact condition that triggers it, and whether tests/ covers that raise. Report gaps without adding tests.",
+    "done_when": "A table maps each exception class to its raise sites (file:line), trigger condition, and the covering test id or 'uncovered'."
+  },
+  {
+    "role": "architect",
+    "task": "Write an ADR plus a slice plan for adding a MINUTE proration policy alongside SECOND/DAY/NONE: define where the policy enum and dispatch live, the contract for the new granularity helper, and how it rounds partial minutes; break the work into 3-4 test-backed slices with the failing test named for each.",
+    "done_when": "An ADR file is committed recording the decision and rejected alternatives, and the plan lists ordered slices each naming its first failing test and the public signatures it touches."
+  },
+  {
+    "role": "architect",
+    "task": "Plan the extraction of proration-policy dispatch out of engine.py into a small policy module: define the shared policy interface (inputs, return type, error contract), state that public behaviour and exception types are unchanged, and sequence the refactor so tests stay green at each step.",
+    "done_when": "A plan document names the new module, gives the policy interface signature, and lists the ordered steps with the test suite passing after each one."
+  },
+  {
+    "role": "implementer",
+    "task": "Add Money.split_evenly(n) built on the existing largest-remainder allocate: split a total into n equal parts whose remainders land on the earliest parts, rejecting n <= 0. TDD it in tests/test_money.py, covering negative totals, n larger than the minor-unit total, and JPY (0-decimal) and KWD (3-decimal) currencies.",
+    "done_when": "New tests in tests/test_money.py fail before the implementation and pass after, parts always sum exactly to the original total, and the full suite is green."
+  },
+  {
+    "role": "implementer",
+    "task": "Fix the reported seat-count-decrease bug where a second change inside the same period credits more than was actually charged: write the failing regression test in tests/test_engine.py that reproduces it (upgrade, then a seat decrease later in the same period), then correct the credit basis so credit never exceeds what was charged.",
+    "done_when": "The regression test fails on the current code, passes after the fix, and no existing engine or plans test changes behaviour."
+  },
+  {
+    "role": "implementer",
+    "task": "Implement the month-end anchor drift tests requested by review: add table-driven cases in tests/test_periods.py for anchors on the 29th, 30th and 31st crossing February in both a leap and a non-leap year, covering at least 14 consecutive periods each, and fix any drift the tests expose.",
+    "done_when": "tests/test_periods.py covers all three anchors across leap and non-leap Februaries for 14+ periods, every boundary matches the original anchor day whenever the month allows, and the suite passes."
+  },
+  {
+    "role": "reviewer",
+    "task": "Review the seat-decrease credit fix branch against its acceptance criteria: check the credit-vs-charged invariant holds for three or more changes in one period, look for sign errors on downgrades, off-by-one at the half-open period boundary, and any new float or division-truncation path. Report findings only.",
+    "done_when": "A review report lists each finding with file:line, severity, and a concrete failing input, or states explicitly that the invariant holds under the cases checked."
+  },
+  {
+    "role": "reviewer",
+    "task": "Audit Money for rounding and overflow correctness independent of the current tests: verify half-up-away-from-zero on negatives, allocate with zero weights, all-zero weight vectors, and a total smaller than the number of parts; confirm no code path produces a float. Report findings; do not fix.",
+    "done_when": "A findings list covers each case with the exact inputs tried and observed vs expected output, and names any code path where a float or a rounding asymmetry appears."
+  },
+  {
+    "role": "orchestrator",
+    "task": "Run the MINUTE-policy feature from request to done: take the architect's ADR and slices, delegate each slice to the implementer, gate each on the reviewer, and thread the results into a single summary including README updates to the policy list and any decisions taken at gates.",
+    "done_when": "All planned slices are merged with the suite green, each slice has a recorded reviewer verdict, and the README policy list plus a one-page summary of gate decisions are updated."
+  }
+]

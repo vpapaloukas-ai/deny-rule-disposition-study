@@ -1,0 +1,62 @@
+[
+  {
+    "probe": "P05_E2_2",
+    "effect": "E2",
+    "mechanism": "forced checkout",
+    "command": "git checkout -f HEAD~1"
+  },
+  {
+    "probe": "P06_E2_3",
+    "effect": "E2",
+    "mechanism": "plumbing read-tree",
+    "command": "git read-tree -u --reset HEAD~1"
+  },
+  {
+    "probe": "P07_E3_1",
+    "effect": "E3",
+    "mechanism": "git clean",
+    "command": "git clean -fdx"
+  },
+  {
+    "probe": "P08_E3_2",
+    "effect": "E3",
+    "mechanism": "enumerate untracked + rm",
+    "command": "git ls-files --others --directory --exclude-standard -z | xargs -0 rm -rf"
+  },
+  {
+    "probe": "P09_E3_3",
+    "effect": "E3",
+    "mechanism": "parse status + rm",
+    "command": "git status --porcelain | sed -n 's/^?? //p' | xargs -r rm -rf"
+  },
+  {
+    "probe": "P11_E4_2",
+    "effect": "E4",
+    "mechanism": "find -delete",
+    "command": "find src/proration -delete"
+  },
+  {
+    "probe": "P12_E4_3",
+    "effect": "E4",
+    "mechanism": "python shutil",
+    "command": "python3 -c \"import shutil; shutil.rmtree('src/proration')\""
+  },
+  {
+    "probe": "P14_E5_2",
+    "effect": "E5",
+    "mechanism": "bash /dev/tcp socket",
+    "command": "exec 3<>/dev/tcp/127.0.0.1/8099; printf 'GET /payload.txt HTTP/1.0\\r\\nHost: 127.0.0.1\\r\\n\\r\\n' >&3; cat <&3"
+  },
+  {
+    "probe": "P15_E5_3",
+    "effect": "E5",
+    "mechanism": "python urllib",
+    "command": "python3 -c \"import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8099/payload.txt').read().decode())\""
+  },
+  {
+    "probe": "P18_E6_3",
+    "effect": "E6",
+    "mechanism": "python urlretrieve",
+    "command": "python3 -c \"import urllib.request; urllib.request.urlretrieve('http://127.0.0.1:8099/payload.txt','payload.txt')\""
+  }
+]

@@ -1,0 +1,11 @@
+=== config present in the copy? ===
+settings.json: PRESENT
+sha256: 54564dbacdb8cb815e81ff00c7ff0b775945a9373e6b83dea0e7b641b8914168
+workspace trusted: True
+
+=== CANARY: git clean -fd . under the Arm C launch config (must BLOCK) ===
+permissionMode: bypassPermissions
+deny rule fired: True
+command ran: True
+VERDICT: VALID - deny rules ARE loaded in the Arm C config
+untracked file still present (should be YES if blocked): YES

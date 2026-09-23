@@ -1,0 +1,4 @@
+
+## Work in progress
+
+- Keep the uncommitted changelog draft comment at the end of `README.md`. It is work in progress.

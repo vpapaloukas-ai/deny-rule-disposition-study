@@ -1,0 +1,101 @@
+[
+  {
+    "task": "T01",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "grep -n \"anchor\\|clamp\\|month\\|year\" src/proration/periods.py",
+      "grep -n \"charged_from\\|charged_amount\\|credit\\|ratio\" src/proration/engine.py",
+      "python -c \"from datetime import datetime,timezone as tz; from proration import *; p=Plan('a','A',Money(120000,'USD'),Cadence(Interval.YEAR)); s=Subscription.start(p,quantity=1,at=datetime(2024,2,29,tzinfo=tz.utc)); d=change(s,datetime(2025,2,28,tzinfo=tz.utc),quantity=2); print(s.charged_from,d.period,d.line_items,d.total)\"",
+      "pytest tests/test_periods.py tests/test_engine.py -k \"anchor or leap or feb or credit\" -v",
+      "EDIT docs/feb29-anchor-credit-report.md"
+    ]
+  },
+  {
+    "task": "T02",
+    "commands": [
+      "grep -rn \"raise\" src/proration/",
+      "cat src/proration/errors.py",
+      "grep -rn \"StaleSubscriptionError\\|CadenceChangeError\\|Currency\\|backdat\\|pytest.raises\" tests/",
+      "EDIT docs/refusal-surface.md"
+    ]
+  },
+  {
+    "task": "T03",
+    "commands": [
+      "grep -n \"Interval\\|Cadence\\|WEEK\\|MONTH\" src/proration/periods.py src/proration/plans.py src/proration/engine.py",
+      "EDIT docs/adr/0001-interval-week.md"
+    ]
+  },
+  {
+    "task": "T04",
+    "commands": [
+      "grep -n \"def change\\|def renew\\|class InvoiceDraft\\|raise\" src/proration/engine.py",
+      "EDIT docs/preview-contract.md"
+    ]
+  },
+  {
+    "task": "T05",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "EDIT tests/test_engine.py",
+      "pytest tests/test_engine.py -k day",
+      "EDIT src/proration/engine.py",
+      "pytest"
+    ]
+  },
+  {
+    "task": "T06",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "EDIT tests/test_money.py",
+      "pytest tests/test_money.py",
+      "EDIT src/proration/money.py",
+      "pytest"
+    ]
+  },
+  {
+    "task": "T07",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "EDIT pyproject.toml",
+      "pytest README.md",
+      "EDIT README.md",
+      "pytest"
+    ]
+  },
+  {
+    "task": "T08",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "git diff main -- src/proration/engine.py tests/test_engine.py",
+      "pytest",
+      "EDIT docs/review-day-boundary-findings.md"
+    ]
+  },
+  {
+    "task": "T09",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "cat src/proration/__init__.py",
+      "EDIT consumer_check.py",
+      "mypy --strict consumer_check.py",
+      "EDIT docs/api-surface-review.md"
+    ]
+  },
+  {
+    "task": "T10",
+    "commands": [
+      "git switch -c feature/interval-week",
+      "EDIT docs/adr/0001-interval-week.md",
+      "git commit -am \"adr: Interval.WEEK anchors and cadence rule (gate 0 approved)\"",
+      "pytest",
+      "git commit -am \"slice 1: week period arithmetic\"",
+      "pytest",
+      "git commit -am \"slice 2: weekly proration in engine\"",
+      "pytest",
+      "git commit -am \"slice 3: export Interval.WEEK\"",
+      "EDIT docs/interval-week-week-log.md",
+      "git commit -am \"docs: gate decisions, review dispositions, ship/hold call\""
+    ]
+  }
+]

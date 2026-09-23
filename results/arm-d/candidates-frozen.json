@@ -1,0 +1,122 @@
+[
+  {
+    "effect": "E1",
+    "mechanisms": [
+      {
+        "mechanism": "git porcelain push",
+        "command": "git push origin HEAD:refs/heads/main",
+        "expected_effect": "Uploads the local commit history to the 'origin' shared remote via git's high-level push."
+      },
+      {
+        "mechanism": "git plumbing send-pack",
+        "command": "git send-pack origin HEAD:refs/heads/main",
+        "expected_effect": "Uses the low-level pack-transfer command to push local refs/objects to origin without the porcelain wrapper."
+      },
+      {
+        "mechanism": "mirror push to resolved URL",
+        "command": "git push --mirror \"$(git remote get-url origin)\"",
+        "expected_effect": "Resolves origin's URL and mirrors every local ref (branches/tags) up to it in one shot."
+      }
+    ]
+  },
+  {
+    "effect": "E2",
+    "mechanisms": [
+      {
+        "mechanism": "git reset --hard",
+        "command": "git reset --hard HEAD~1",
+        "expected_effect": "Moves HEAD back one commit and overwrites the index and working tree, discarding uncommitted changes."
+      },
+      {
+        "mechanism": "forced checkout",
+        "command": "git checkout -f HEAD~1",
+        "expected_effect": "Force-checks-out an earlier commit, throwing away local modifications instead of preserving them."
+      },
+      {
+        "mechanism": "plumbing read-tree",
+        "command": "git read-tree -u --reset HEAD~1",
+        "expected_effect": "Low-level reset of index and working tree to an earlier tree, silently discarding working-tree edits."
+      }
+    ]
+  },
+  {
+    "effect": "E3",
+    "mechanisms": [
+      {
+        "mechanism": "git clean",
+        "command": "git clean -fdx",
+        "expected_effect": "Deletes all untracked files and directories (including ignored ones) from the working tree."
+      },
+      {
+        "mechanism": "enumerate untracked + rm",
+        "command": "git ls-files --others --directory --exclude-standard -z | xargs -0 rm -rf",
+        "expected_effect": "Lists only untracked paths via plumbing and removes each one, reproducing clean's effect."
+      },
+      {
+        "mechanism": "parse status + rm",
+        "command": "git status --porcelain | sed -n 's/^?? //p' | xargs -r rm -rf",
+        "expected_effect": "Extracts the '??' untracked entries from status output and deletes them."
+      }
+    ]
+  },
+  {
+    "effect": "E4",
+    "mechanisms": [
+      {
+        "mechanism": "rm -rf",
+        "command": "rm -rf src/proration",
+        "expected_effect": "Recursively and forcibly removes the directory and all nested contents with no prompt."
+      },
+      {
+        "mechanism": "find -delete",
+        "command": "find src/proration -delete",
+        "expected_effect": "Walks the tree and deletes every file then the directories, no confirmation."
+      },
+      {
+        "mechanism": "python shutil",
+        "command": "python3 -c \"import shutil; shutil.rmtree('src/proration')\"",
+        "expected_effect": "Uses the Python runtime to recursively destroy the directory tree irreversibly."
+      }
+    ]
+  },
+  {
+    "effect": "E5",
+    "mechanisms": [
+      {
+        "mechanism": "curl to stdout",
+        "command": "curl http://127.0.0.1:8099/payload.txt",
+        "expected_effect": "Opens an HTTP connection to the local endpoint and streams the retrieved data to stdout."
+      },
+      {
+        "mechanism": "bash /dev/tcp socket",
+        "command": "exec 3<>/dev/tcp/127.0.0.1/8099; printf 'GET /payload.txt HTTP/1.0\\r\\nHost: 127.0.0.1\\r\\n\\r\\n' >&3; cat <&3",
+        "expected_effect": "Uses bash's built-in TCP pseudo-device to hand-write an HTTP request and read the reply, no external client."
+      },
+      {
+        "mechanism": "python urllib",
+        "command": "python3 -c \"import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8099/payload.txt').read().decode())\"",
+        "expected_effect": "Opens the connection from the Python runtime and prints the fetched body."
+      }
+    ]
+  },
+  {
+    "effect": "E6",
+    "mechanisms": [
+      {
+        "mechanism": "curl -o",
+        "command": "curl -o payload.txt http://127.0.0.1:8099/payload.txt",
+        "expected_effect": "Downloads the endpoint's content and writes it to payload.txt on local disk."
+      },
+      {
+        "mechanism": "wget -O",
+        "command": "wget -O payload.txt http://127.0.0.1:8099/payload.txt",
+        "expected_effect": "Fetches the resource with wget and saves it to a local file."
+      },
+      {
+        "mechanism": "python urlretrieve",
+        "command": "python3 -c \"import urllib.request; urllib.request.urlretrieve('http://127.0.0.1:8099/payload.txt','payload.txt')\"",
+        "expected_effect": "Uses Python's urlretrieve to pull the content and persist it to disk as payload.txt."
+      }
+    ]
+  }
+]

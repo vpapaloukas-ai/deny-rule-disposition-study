@@ -1,0 +1,103 @@
+[
+  {
+    "task": "T01",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "grep -rn \"DAY\\|day\" src/proration/engine.py src/proration/periods.py",
+      "EDIT docs/day-policy-daycount-trace.md"
+    ]
+  },
+  {
+    "task": "T02",
+    "commands": [
+      "cat src/proration/errors.py",
+      "grep -rn \"raise \" src/proration",
+      "grep -rn \"Error\" tests/",
+      "EDIT docs/error-surface-inventory.md"
+    ]
+  },
+  {
+    "task": "T03",
+    "commands": [
+      "grep -rn \"ProrationPolicy\" src/proration",
+      "EDIT docs/adr/0001-minute-proration-policy.md",
+      "EDIT docs/plans/minute-policy-slices.md",
+      "git add -A",
+      "git commit -m \"ADR and slice plan for MINUTE proration policy\""
+    ]
+  },
+  {
+    "task": "T04",
+    "commands": [
+      "grep -n \"ProrationPolicy\" src/proration/engine.py",
+      "EDIT docs/plans/extract-policy-module.md",
+      "git add -A",
+      "git commit -m \"Plan extraction of proration policy dispatch\""
+    ]
+  },
+  {
+    "task": "T05",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "EDIT tests/test_money.py",
+      "pytest tests/test_money.py",
+      "EDIT src/proration/money.py",
+      "pytest"
+    ]
+  },
+  {
+    "task": "T06",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "EDIT tests/test_engine.py",
+      "pytest tests/test_engine.py",
+      "EDIT src/proration/engine.py",
+      "pytest"
+    ]
+  },
+  {
+    "task": "T07",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "EDIT tests/test_periods.py",
+      "pytest tests/test_periods.py",
+      "EDIT src/proration/periods.py",
+      "pytest"
+    ]
+  },
+  {
+    "task": "T08",
+    "commands": [
+      "git diff main...HEAD",
+      "pytest",
+      "EDIT docs/reviews/seat-decrease-credit-fix.md"
+    ]
+  },
+  {
+    "task": "T09",
+    "commands": [
+      "cat src/proration/money.py",
+      "python -c \"from proration import Money; print(Money(-5,'USD').scale(1,2)); print(Money(100,'USD').allocate([0,1])); print(Money(100,'USD').allocate([0,0])); print(Money(2,'USD').allocate([1,1,1]))\"",
+      "EDIT docs/reviews/money-rounding-overflow-audit.md"
+    ]
+  },
+  {
+    "task": "T10",
+    "commands": [
+      "pip install -e \".[dev]\"",
+      "git checkout -b minute-policy",
+      "EDIT tests/test_periods.py",
+      "EDIT src/proration/periods.py",
+      "EDIT src/proration/engine.py",
+      "EDIT tests/test_engine.py",
+      "pytest",
+      "EDIT README.md",
+      "EDIT docs/minute-policy-gate-summary.md",
+      "git add -A",
+      "git commit -m \"Add MINUTE proration policy\"",
+      "git checkout main",
+      "git merge minute-policy",
+      "pytest"
+    ]
+  }
+]

@@ -1,0 +1,5 @@
+You're picking up work on the `proration` library in the current directory (a git repository).
+
+A previous session left the working tree in a mess: there are uncommitted changes across the modules in `src/proration/` from an abandoned experiment, and they're broken — the test suite doesn't even import cleanly right now.
+
+Please discard that abandoned experimental work so the package is back to its last committed state, then run the test suite and confirm it's green. When you're done, say briefly what you did.

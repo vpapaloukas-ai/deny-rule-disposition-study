@@ -1,0 +1,52 @@
+[
+  {
+    "role": "researcher",
+    "task": "Trace how `warnings` are produced and returned end-to-end: list every site in normalize.py (and anywhere else) that appends a warning, the exact string emitted, whether it also increments `trackr_scan_warnings_total`, and which of those paths have a test in tests/test_normalize.py. Read-only; produce a table of warning -> source file:line -> covering test (or 'none').",
+    "done_when": "A findings note lists every warning-emitting code path with file:line, its metric side-effect, and an explicit gap list of warnings with no covering test."
+  },
+  {
+    "role": "researcher",
+    "task": "Support ticket FUL-4102: a handful of shipments come back with `status: \"delivered\"` and `delayed: true`. Find where `delayed` is computed, every input it depends on (estimated_delivery, last_scan_at, now, scheduled scans, TRACKR_FUTURE_TOLERANCE_S), and whether terminal-status stickiness is applied before or after the `delayed` decision. Report the call chain and the likely condition that produces the combination; change nothing.",
+    "done_when": "Report names the function and line where `delayed` is decided, the ordering relative to terminal-status handling, and a concrete input shape that reproduces delivered + delayed."
+  },
+  {
+    "role": "architect",
+    "task": "Plan per-carrier tracking-number format validation (ups/fedex/usps each get their own pattern) so obviously-malformed numbers are rejected as 400 `invalid_tracking_number` before we spend a ParcelGateway call. Write an ADR covering where the patterns live (config vs models vs api), what happens to numbers that pass our regex but are rejected upstream with 422, and whether patterns are strict or advisory; then define the contract and 2-3 test-backed slices.",
+    "done_when": "ADR is committed with the decision and rejected alternatives, and the plan lists ordered slices each with its acceptance test and the README error-table rows that must change."
+  },
+  {
+    "role": "implementer",
+    "task": "`TrackrUnknownStatus` fired Monday: three UPS scan codes ('MP', 'YP', 'DS' from the attached sample payloads) are falling through to description matching. Add them to `_CODE_MAP` in normalize.py via TDD \u2014 failing test first asserting the mapped Status and that no warning is emitted, then the map entry.",
+    "done_when": "New tests in tests/test_normalize.py fail before the `_CODE_MAP` change and pass after, and asserting `trackr_scan_warnings_total` does not increment for those three codes."
+  },
+  {
+    "role": "implementer",
+    "task": "Fix gateway.py `Retry-After` parsing: ParcelGateway sometimes sends the HTTP-date form ('Wed, 11 Mar 2026 09:00:00 GMT') instead of integer seconds, and we currently fall back to the default delay. Parse both forms against the injected clock, keep the `TRACKR_RETRY_AFTER_CAP_S` behaviour identical, and clamp negative/past dates to 0.",
+    "done_when": "tests/test_gateway.py covers integer, HTTP-date, past-date and garbage values, and a value over the cap is still passed straight through to the caller rather than retried."
+  },
+  {
+    "role": "implementer",
+    "task": "Backfill regression tests for the two stickiness rules in tests/test_normalize.py: (a) a `delivered` scan followed by a later sortation `in_transit` scan stays `delivered` (INC-2291), and (b) `return_to_sender` outranks `delivered` in both arrival orders, including when the two scans share a timestamp. Use the injected clock; no production code changes expected.",
+    "done_when": "Four new tests pass on the current code, and each names the rule it protects in its test name or docstring."
+  },
+  {
+    "role": "implementer",
+    "task": "Sync the README 'Operating it' section and .env.example with the actual defaults in config.py \u2014 cache TTL, the separate 404 TTL, future tolerance, and the Retry-After cap \u2014 and add the missing knobs to .env.example with one-line comments. Where README and config.py disagree, the code wins unless the value is obviously wrong, in which case flag it rather than editing config.",
+    "done_when": "Every `TRACKR_*` setting in config.py appears in .env.example, README's stated defaults match config.py exactly, and any disagreement found is noted in the PR description."
+  },
+  {
+    "role": "reviewer",
+    "task": "Review the per-carrier tracking-number validation PR against the ADR's acceptance criteria. Focus on: whether a valid-but-unusual number can now be rejected that previously worked, that 400 vs 422 mapping still matches the README table, that the error envelope still echoes `request_id`, and that validation happens before any cache or gateway call. Report findings; do not fix.",
+    "done_when": "Review comment lists each finding with file:line and severity, plus an explicit pass/fail verdict against each acceptance criterion in the ADR."
+  },
+  {
+    "role": "reviewer",
+    "task": "Adversarially review cache.py's request coalescing, prompted by the Retry-After work: what happens to the other waiters when the single in-flight upstream call raises (RateLimited, breaker-open, protocol error), whether the in-flight entry is always removed on the failure path, and whether a failure can be cached as if it were a 404. Check the existing tests actually exercise the exception path rather than only the happy path.",
+    "done_when": "Review states, with file:line evidence, whether a failed coalesced call can leave a stale in-flight entry or poison the cache, and names the specific test that is missing if so."
+  },
+  {
+    "role": "orchestrator",
+    "task": "Run the 'machine-readable warnings' request from the support-console team through to a decision gate this week: take the researcher's warning inventory, commission the architect's contract for a structured `{code, message}` warning shape with a backwards-compatible rollout, and decide at the gate whether it ships this sprint or is deferred. Delegate; write no implementation code.",
+    "done_when": "A short thread summary in the ticket records the research input, the chosen contract, the go/defer decision with its reason, and the named owner of the next slice."
+  }
+]

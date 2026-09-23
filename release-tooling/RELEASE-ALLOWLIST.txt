@@ -1,0 +1,141 @@
+# RELEASE-ALLOWLIST.txt - the only list of scripts and tooling that ship. Default deny.
+#
+# Paths are relative to the experiment directory, and each ships at the same path in the bundle.
+# One path per line. `#` starts a comment. A line beginning `#- ` names a file that exists and
+# deliberately does NOT ship, with its reason; test_release_tooling.py fails if any file in
+# harness/ is neither listed nor named that way, so no file can go unclassified.
+#
+# This list replaces harness/RELEASE-ALLOWLIST.txt for publication. That file is not edited:
+# harness/ is the study's record and nothing in it changes. It is itself a release file, below.
+#
+# harness/ holds three classes of file:
+#   run                 the scripts the arms were run with. Ship.
+#   check and analysis  analysers, oracles, prompt and manifest builders, and the measured/
+#                       controls that produced and checked the reported numbers. Ship.
+#   release             the pre-publication release scripts. Do NOT ship from harness/: the
+#                       scrub rewrote their own rules in their published copies, and the
+#                       assembler did not stop on a gate failure. Working versions are in
+#                       release-tooling/.
+
+# ═══════════════════════════════════════════════════════════════════════════════════════
+# harness/ - run
+harness/00-setup.sh
+harness/01-loopback-target.sh
+harness/02-root-preflight.sh
+harness/03-substrate-blind.sh
+harness/04-freeze-substrate.sh
+harness/05-generator-d.sh
+harness/06-generator-c.sh
+harness/10-arm-d.sh
+harness/20-arm-c.sh
+harness/30-arm-ab.sh
+harness/40-phase2.sh
+harness/50-cross-model.sh
+harness/60-disposition-n50.sh
+# Arm E - the domain-sensitivity probe on Arm C's REACH (2026-08-11).
+harness/arm-e/03b.sh
+harness/arm-e/06b.sh
+harness/arm-e/06c.sh
+harness/arm-e/07b.sh
+harness/arm-e/07c.sh
+harness/arm-e/07d.sh
+harness/arm-e/match.py
+
+# ═══════════════════════════════════════════════════════════════════════════════════════
+# harness/ - check and analysis
+harness/arm-ab-analyze.py
+harness/arm-ab-oracle.py
+harness/arm-c-analyze.py
+harness/arm-c-build-manifest.py
+harness/arm-c-make-judge-prompt.py
+harness/arm-d-analyze.py
+harness/arm-d-build-manifest.py
+harness/arm-d-classify-one.py
+harness/arm-d-make-prompt.py
+harness/arm-d-oracle.py
+harness/gen-c-analyse.py
+harness/phase2-analyze.py
+harness/n50-reclassify.py
+# measured/, sections A-E of the as-ran allowlist, unchanged.
+# A. The methodological spine.
+harness/measured/f2-discrimination.sh
+harness/measured/f2b-write-controls.sh
+harness/measured/f2c-guard-scope.sh
+harness/measured/f2d-mode-controls.sh
+harness/measured/f2e-acceptedits-deny.sh
+harness/measured/f16-substrate-blindness.sh
+# B. Offline analyser controls.
+harness/measured/validate-arm-d.py
+harness/measured/validate-arm-c.py
+harness/measured/validate-arm-ab.py
+harness/measured/validate-phase2.py
+harness/measured/validate-ab-oracle.sh
+harness/measured/validate-curl-canary.sh
+harness/measured/validate-armc-all.sh
+harness/measured/validate-n50.sh
+harness/measured/validate-xmodel.sh
+harness/measured/verify-freeze.py
+# C. Oracle design and environment integrity.
+harness/measured/d1-oracle.sh
+harness/measured/harden-remote.sh
+harness/measured/fix-f5-remote.sh
+harness/measured/verify-origin.sh
+harness/measured/verify-realrepo.sh
+harness/measured/f15-agent-path.sh
+harness/measured/stage1-rules.sh
+# D. The OS-sandbox phase, including its on/off control.
+harness/measured/investigate-sandbox.sh
+harness/measured/phase2-deps.sh
+harness/measured/phase2-engage.sh
+harness/measured/phase2-net-control.sh
+# E. Cleared only after an edit: two lines were cut before release, marked in the file.
+harness/measured/f12-trust.sh
+
+# ═══════════════════════════════════════════════════════════════════════════════════════
+# harness/ - release (not shipped from harness/)
+#- harness/assemble-public-bundle.sh    release: working version is release-tooling/assemble-public-bundle.sh
+#- harness/bundle-stopword-gate.py      release: working version is release-tooling/bundle-stopword-gate.py
+#- harness/scrub-n50-transcripts.sh     release: working version is release-tooling/scrub-n50-transcripts.sh
+#- harness/RELEASE-ALLOWLIST.txt        release: replaced for publication by this file
+
+# ═══════════════════════════════════════════════════════════════════════════════════════
+# harness/ - not shipped, as the as-ran allowlist decided
+#- harness/measured/f17-mcp-and-lint.sh      discloses the operator's connected account services
+#- harness/measured/inspect-userconfig.sh    discloses the operator's user configuration
+#- harness/measured/check-deny-vs-ask.py     one-off, skipped on value
+#- harness/measured/compare-runs.py          one-off, skipped on value
+#- harness/measured/diagnose-void.py         one-off, skipped on value
+#- harness/measured/dryrun-step2.sh          one-off, skipped on value
+#- harness/measured/freeze-phase2-targets.py one-off, skipped on value
+#- harness/measured/gen-d-analyse.py         one-off, skipped on value
+#- harness/measured/phase2-diagnose.py       one-off, skipped on value
+#- harness/measured/stage0-probe.sh          one-off, skipped on value
+#- harness/measured/stage0b-clone.sh         one-off, skipped on value
+#- harness/measured/stage0c-timing.sh        one-off, skipped on value
+#- harness/measured/xmodel-detail.py         one-off, skipped on value
+
+# ═══════════════════════════════════════════════════════════════════════════════════════
+# rerun-2026-09/ - the re-run of 2026-09-17. Its scripts and the batch B CLAUDE.md section are
+# pinned by SHA-256 in its pre-registration; every other file in rerun-2026-09/ ships as a scrubbed
+# copy, and no script ships from there unless it is listed here.
+rerun-2026-09/scripts/30-arm-ab.sh
+rerun-2026-09/scripts/60-rerun.sh
+rerun-2026-09/scripts/rerun-lib.sh
+rerun-2026-09/scripts/batch-b-claude-md.txt
+rerun-2026-09/analysis/verify-run-records.py
+
+# ═══════════════════════════════════════════════════════════════════════════════════════
+# release-tooling/ - written after the study, for publication. Every file here is checked
+# byte for byte against its source after the scrub; see assemble-public-bundle.sh.
+release-tooling/README.md
+release-tooling/RELEASE-ALLOWLIST.txt
+release-tooling/REPACK-MANIFEST.txt
+release-tooling/analyse-rerun.py
+release-tooling/assemble-public-bundle.sh
+release-tooling/bundle-stopword-gate.py
+release-tooling/check-links.py
+release-tooling/rederive-n50-from-tarball.py
+release-tooling/repack-tarballs.py
+release-tooling/scrub-lib.sh
+release-tooling/scrub-n50-transcripts.sh
+release-tooling/test_release_tooling.py

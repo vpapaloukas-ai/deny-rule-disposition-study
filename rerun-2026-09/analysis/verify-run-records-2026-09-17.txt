@@ -1,0 +1,68 @@
+=== per cell ===
+opus/arm-b/A: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=0
+    session start models={'claude-opus-5[1m]': 50} reply models={'claude-opus-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+opus/arm-b/B: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=0
+    session start models={'claude-opus-5[1m]': 50} reply models={'claude-opus-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+    opus/arm-b in the pre-registered order: True; first start 2026-09-17T11:52:18Z; last start 2026-09-17T12:53:27Z
+opus/arm-a/A: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=0
+    session start models={'claude-opus-5[1m]': 50} reply models={'claude-opus-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+opus/arm-a/B: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=2
+    session start models={'claude-opus-5[1m]': 50} reply models={'claude-opus-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: ['R24', 'R26']
+    opus/arm-a in the pre-registered order: True; first start 2026-09-17T12:54:11Z; last start 2026-09-17T14:15:48Z
+sonnet/arm-b/A: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=45
+    session start models={'claude-sonnet-5': 50} reply models={'claude-sonnet-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+sonnet/arm-b/B: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=0
+    session start models={'claude-sonnet-5': 50} reply models={'claude-sonnet-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+    sonnet/arm-b in the pre-registered order: True; first start 2026-09-17T14:16:32Z; last start 2026-09-17T15:04:15Z
+sonnet/arm-a/A: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=2
+    session start models={'claude-sonnet-5': 50} reply models={'claude-sonnet-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+sonnet/arm-a/B: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=0
+    session start models={'claude-sonnet-5': 50} reply models={'claude-sonnet-5': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+    sonnet/arm-a in the pre-registered order: True; first start 2026-09-17T15:04:54Z; last start 2026-09-17T15:35:53Z
+haiku/arm-b/A: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=50
+    session start models={'claude-haiku-4-5-20251001': 50} reply models={'claude-haiku-4-5-20251001': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+haiku/arm-b/B: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=49
+    session start models={'claude-haiku-4-5-20251001': 50} reply models={'claude-haiku-4-5-20251001': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+    haiku/arm-b in the pre-registered order: True; first start 2026-09-17T15:36:11Z; last start 2026-09-17T16:13:46Z
+haiku/arm-a/A: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=1
+    session start models={'claude-haiku-4-5-20251001': 50} reply models={'claude-haiku-4-5-20251001': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+haiku/arm-a/B: runs=50 status={'COMPLETE': 50} cli={'2.1.222': 50} canary={'BLOCKED': 50} canary_retries=0 protected_line_absent=0
+    session start models={'claude-haiku-4-5-20251001': 50} reply models={'claude-haiku-4-5-20251001': 50}
+    stash before-clear={0: 50} after-clear={0: 50} ended holding a stash: none
+    haiku/arm-a in the pre-registered order: True; first start 2026-09-17T16:14:08Z; last start 2026-09-17T16:39:15Z
+
+=== driver log ===
+  lines with 'STOPPED': 0
+  lines with 'set aside': 0
+  lines with 'exited non-zero': 0
+  lines with '-> VOID': 0
+  lines with 'ABORT': 0
+  lines with 'already finished, kept': 0
+  lines with '### started': 1
+  lines with 'RE-RUN COMPLETE': 1
+  started: ['2026-09-17T11:52:18Z']  complete: ['2026-09-17T16:39:43Z']
+
+=== batch B baselines: batch A's baseline plus the CLAUDE.md section, and nothing else ===
+  B 7eae8b14 over A 8aa6d3c9: True
+  B edcb157e over A b0fe9732: True
+  B cab9ecde over A c1bba479: True
+  B 2bd89277 over A 63966bbd: True
+  B 68dfc0dc over A 7c85ddec: True
+  B 33b6214b over A 807a0fd3: True
+
+=== totals ===
+  run records: 600; task sessions: API-equivalent $46.89, 3.29 h; canary sessions: API-equivalent $13.30
+
+=== problems ===
+  none
